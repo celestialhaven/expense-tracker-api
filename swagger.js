@@ -8,9 +8,9 @@ const doc = {
       'A REST API for managing personal expenses and expense categories.'
   },
 
-
+  host: 'expense-tracker-api-hxbu.onrender.com',
   basePath: '/',
-
+  schemes: ['https'],
 
   consumes: ['application/json'],
   produces: ['application/json'],

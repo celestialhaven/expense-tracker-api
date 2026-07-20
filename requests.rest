@@ -1,0 +1,26 @@
+### Create a category
+POST http://localhost:3000/categories
+Content-Type: application/json
+
+{
+  "name": "Utilities",
+  "description": "Electricity, water, internet, and phone bills",
+  "monthlyBudget": 5000,
+  "isActive": true
+}
+
+###
+POST http://localhost:3000/expenses
+Content-Type: application/json
+
+{
+  "title": "Electricity Bill",
+  "amount": 2800,
+  "categoryId": "6a5e327ff7115c2f876e6ed9",
+  "paymentMethod": "GCash",
+  "expenseDate": "2026-07-20",
+  "description": "Monthly electricity payment",
+  "merchant": "Electric Cooperative",
+  "isRecurring": true,
+  "status": "paid"
+}

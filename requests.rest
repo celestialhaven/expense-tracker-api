@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:3000
+@baseUrl = https://expense-tracker-api-hxbu.onrender.com
 
 # Replace these with real MongoDB IDs.
 @categoryId = PASTE_CATEGORY_ID_HERE

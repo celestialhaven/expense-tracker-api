@@ -8,7 +8,9 @@ const doc = {
       'A REST API for creating, retrieving, updating, deleting, and categorizing personal expense records.'
   },
 
+  host: process.env.API_HOST || 'expense-tracker-api-hxbu.onrender.com',
   basePath: '/',
+  schemes: [process.env.API_SCHEME || 'https'],
 
   consumes: ['application/json'],
   produces: ['application/json'],

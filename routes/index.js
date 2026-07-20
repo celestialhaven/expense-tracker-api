@@ -3,7 +3,17 @@ const express = require('express');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  res.status(200).json({
+  /*
+    #swagger.tags = ['General']
+    #swagger.summary = 'Expense Tracker API home'
+    #swagger.description = 'Returns the available API resources.'
+
+    #swagger.responses[200] = {
+      description: 'API information retrieved successfully.'
+    }
+  */
+
+  return res.status(200).json({
     message: 'Welcome to the Expense Tracker API.',
     documentation: '/api-docs',
     endpoints: {
@@ -13,10 +23,7 @@ router.get('/', (req, res) => {
   });
 });
 
-// Swagger documentation
 router.use('/api-docs', require('./swagger'));
-
-// API routes
 router.use('/expenses', require('./expenses'));
 router.use('/categories', require('./categories'));
 

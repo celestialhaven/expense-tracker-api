@@ -1,46 +1,29 @@
 const { ObjectId } = require('mongodb');
 const mongodb = require('../data/database');
 
-/**
- * Get all expense records.
- */
-async function getAllExpenses(req, res) {
+async function getAllExpenses(req, res, next) {
   try {
     const expenses = await mongodb
       .getDb()
       .collection('expenses')
       .find()
+      .sort({ expenseDate: -1 })
       .toArray();
 
-    res.status(200).json(expenses);
+    return res.status(200).json(expenses);
   } catch (error) {
-    console.error('Error retrieving expenses:', error);
-
-    res.status(500).json({
-      message: 'An error occurred while retrieving expenses.'
-    });
+    return next(error);
   }
 }
 
-/**
- * Get one expense using its MongoDB ID.
- */
-async function getExpenseById(req, res) {
+async function getExpenseById(req, res, next) {
   try {
-    const expenseId = req.params.id;
-
-    if (!ObjectId.isValid(expenseId)) {
-      return res.status(400).json({
-        message: 'Invalid expense ID.'
-      });
-    }
+    const expenseId = new ObjectId(req.params.id);
 
     const expense = await mongodb
       .getDb()
       .collection('expenses')
-      .findOne({
-        _id: new ObjectId(expenseId)
-      });
+      .findOne({ _id: expenseId });
 
     if (!expense) {
       return res.status(404).json({
@@ -48,20 +31,13 @@ async function getExpenseById(req, res) {
       });
     }
 
-    res.status(200).json(expense);
+    return res.status(200).json(expense);
   } catch (error) {
-    console.error('Error retrieving expense:', error);
-
-    res.status(500).json({
-      message: 'An error occurred while retrieving the expense.'
-    });
+    return next(error);
   }
 }
 
-/**
- * Create a new expense.
- */
-async function createExpense(req, res) {
+async function createExpense(req, res, next) {
   try {
     const {
       title,
@@ -75,25 +51,12 @@ async function createExpense(req, res) {
       status
     } = req.body;
 
-    if (!title || amount === undefined || !categoryId || !expenseDate) {
-      return res.status(400).json({
-        message:
-          'Title, amount, categoryId, and expenseDate are required.'
-      });
-    }
-
-    if (!ObjectId.isValid(categoryId)) {
-      return res.status(400).json({
-        message: 'The categoryId must be a valid MongoDB ID.'
-      });
-    }
+    const categoryObjectId = new ObjectId(categoryId);
 
     const category = await mongodb
       .getDb()
       .collection('categories')
-      .findOne({
-        _id: new ObjectId(categoryId)
-      });
+      .findOne({ _id: categoryObjectId });
 
     if (!category) {
       return res.status(404).json({
@@ -102,16 +65,17 @@ async function createExpense(req, res) {
     }
 
     const expense = {
-      title: title.trim(),
-      amount: Number(amount),
-      categoryId: new ObjectId(categoryId),
+      title,
+      amount,
+      categoryId: categoryObjectId,
       paymentMethod: paymentMethod || 'Cash',
       expenseDate: new Date(expenseDate),
       description: description || '',
       merchant: merchant || '',
       isRecurring: isRecurring ?? false,
       status: status || 'paid',
-      createdAt: new Date()
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     const result = await mongodb
@@ -119,21 +83,109 @@ async function createExpense(req, res) {
       .collection('expenses')
       .insertOne(expense);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Expense created successfully.',
       expenseId: result.insertedId
     });
   } catch (error) {
-    console.error('Error creating expense:', error);
+    return next(error);
+  }
+}
 
-    res.status(500).json({
-      message: 'An error occurred while creating the expense.'
+async function updateExpense(req, res, next) {
+  try {
+    const expenseId = new ObjectId(req.params.id);
+
+    const {
+      title,
+      amount,
+      categoryId,
+      paymentMethod,
+      expenseDate,
+      description,
+      merchant,
+      isRecurring,
+      status
+    } = req.body;
+
+    const categoryObjectId = new ObjectId(categoryId);
+
+    const category = await mongodb
+      .getDb()
+      .collection('categories')
+      .findOne({ _id: categoryObjectId });
+
+    if (!category) {
+      return res.status(404).json({
+        message: 'The selected category does not exist.'
+      });
+    }
+
+    const updatedExpense = {
+      title,
+      amount,
+      categoryId: categoryObjectId,
+      paymentMethod: paymentMethod || 'Cash',
+      expenseDate: new Date(expenseDate),
+      description: description || '',
+      merchant: merchant || '',
+      isRecurring: isRecurring ?? false,
+      status: status || 'paid',
+      updatedAt: new Date()
+    };
+
+    const result = await mongodb
+      .getDb()
+      .collection('expenses')
+      .updateOne(
+        { _id: expenseId },
+        { $set: updatedExpense }
+      );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        message: 'Expense not found.'
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Expense updated successfully.',
+      expenseId,
+      modifiedCount: result.modifiedCount
     });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function deleteExpense(req, res, next) {
+  try {
+    const expenseId = new ObjectId(req.params.id);
+
+    const result = await mongodb
+      .getDb()
+      .collection('expenses')
+      .deleteOne({ _id: expenseId });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        message: 'Expense not found.'
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Expense deleted successfully.',
+      expenseId
+    });
+  } catch (error) {
+    return next(error);
   }
 }
 
 module.exports = {
   getAllExpenses,
   getExpenseById,
-  createExpense
+  createExpense,
+  updateExpense,
+  deleteExpense
 };

@@ -5,32 +5,34 @@ const doc = {
     version: '1.0.0',
     title: 'Expense Tracker API',
     description:
-      'A REST API for managing personal expenses and expense categories.'
+      'A REST API for creating, retrieving, updating, deleting, and categorizing personal expense records.'
   },
 
-  host: 'expense-tracker-api-hxbu.onrender.com',
   basePath: '/',
-  schemes: ['https'],
 
   consumes: ['application/json'],
   produces: ['application/json'],
 
   tags: [
     {
+      name: 'General',
+      description: 'General API information.'
+    },
+    {
       name: 'Categories',
-      description: 'Operations for managing expense categories.'
+      description: 'Create and manage expense categories.'
     },
     {
       name: 'Expenses',
-      description: 'Operations for managing expense records.'
+      description: 'Create and manage expense records.'
     }
   ],
 
   definitions: {
     CategoryInput: {
-      name: 'Utilities',
+      $name: 'Utilities',
       description: 'Electricity, water, internet, and phone bills',
-      monthlyBudget: 5000,
+      $monthlyBudget: 5000,
       isActive: true
     },
 
@@ -40,15 +42,16 @@ const doc = {
       description: 'Electricity, water, internet, and phone bills',
       monthlyBudget: 5000,
       isActive: true,
-      createdAt: '2026-07-20T10:00:00.000Z'
+      createdAt: '2026-07-20T10:00:00.000Z',
+      updatedAt: '2026-07-20T10:00:00.000Z'
     },
 
     ExpenseInput: {
-      title: 'Electricity Bill',
-      amount: 2800,
-      categoryId: '669f12345678901234567890',
+      $title: 'Electricity Bill',
+      $amount: 2800,
+      $categoryId: '669f12345678901234567890',
       paymentMethod: 'GCash',
-      expenseDate: '2026-07-20',
+      $expenseDate: '2026-07-20',
       description: 'Monthly electricity payment',
       merchant: 'Electric Cooperative',
       isRecurring: true,
@@ -66,18 +69,28 @@ const doc = {
       merchant: 'Electric Cooperative',
       isRecurring: true,
       status: 'paid',
-      createdAt: '2026-07-20T10:00:00.000Z'
+      createdAt: '2026-07-20T10:00:00.000Z',
+      updatedAt: '2026-07-20T10:00:00.000Z'
+    },
+
+    ValidationError: {
+      message: 'Validation failed.',
+      errors: [
+        {
+          field: 'amount',
+          message: 'Amount must be greater than 0.',
+          location: 'body'
+        }
+      ]
     },
 
     Error: {
-      message: 'An error occurred while processing the request.'
+      message: 'The requested resource was not found.'
     }
   }
 };
 
 const outputFile = './swagger-output.json';
-
-// Use the root route file so swagger-autogen can discover the subroutes.
 const routes = ['./routes/index.js'];
 
 swaggerAutogen(outputFile, routes, doc)

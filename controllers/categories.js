@@ -1,46 +1,29 @@
 const { ObjectId } = require('mongodb');
 const mongodb = require('../data/database');
 
-/**
- * Get all categories.
- */
-async function getAllCategories(req, res) {
+async function getAllCategories(req, res, next) {
   try {
     const categories = await mongodb
       .getDb()
       .collection('categories')
       .find()
+      .sort({ name: 1 })
       .toArray();
 
-    res.status(200).json(categories);
+    return res.status(200).json(categories);
   } catch (error) {
-    console.error('Error retrieving categories:', error);
-
-    res.status(500).json({
-      message: 'An error occurred while retrieving categories.'
-    });
+    return next(error);
   }
 }
 
-/**
- * Get one category using its MongoDB ID.
- */
-async function getCategoryById(req, res) {
+async function getCategoryById(req, res, next) {
   try {
-    const categoryId = req.params.id;
-
-    if (!ObjectId.isValid(categoryId)) {
-      return res.status(400).json({
-        message: 'Invalid category ID.'
-      });
-    }
+    const categoryId = new ObjectId(req.params.id);
 
     const category = await mongodb
       .getDb()
       .collection('categories')
-      .findOne({
-        _id: new ObjectId(categoryId)
-      });
+      .findOne({ _id: categoryId });
 
     if (!category) {
       return res.status(404).json({
@@ -48,20 +31,13 @@ async function getCategoryById(req, res) {
       });
     }
 
-    res.status(200).json(category);
+    return res.status(200).json(category);
   } catch (error) {
-    console.error('Error retrieving category:', error);
-
-    res.status(500).json({
-      message: 'An error occurred while retrieving the category.'
-    });
+    return next(error);
   }
 }
 
-/**
- * Create a new category.
- */
-async function createCategory(req, res) {
+async function createCategory(req, res, next) {
   try {
     const {
       name,
@@ -70,18 +46,13 @@ async function createCategory(req, res) {
       isActive
     } = req.body;
 
-    if (!name || monthlyBudget === undefined) {
-      return res.status(400).json({
-        message: 'Name and monthlyBudget are required.'
-      });
-    }
-
     const category = {
-      name: name.trim(),
+      name,
       description: description || '',
-      monthlyBudget: Number(monthlyBudget),
+      monthlyBudget,
       isActive: isActive ?? true,
-      createdAt: new Date()
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     const result = await mongodb
@@ -89,21 +60,110 @@ async function createCategory(req, res) {
       .collection('categories')
       .insertOne(category);
 
-    res.status(201).json({
+    return res.status(201).json({
       message: 'Category created successfully.',
       categoryId: result.insertedId
     });
   } catch (error) {
-    console.error('Error creating category:', error);
+    return next(error);
+  }
+}
 
-    res.status(500).json({
-      message: 'An error occurred while creating the category.'
+async function updateCategory(req, res, next) {
+  try {
+    const categoryId = new ObjectId(req.params.id);
+
+    const {
+      name,
+      description,
+      monthlyBudget,
+      isActive
+    } = req.body;
+
+    const updatedCategory = {
+      name,
+      description: description || '',
+      monthlyBudget,
+      isActive: isActive ?? true,
+      updatedAt: new Date()
+    };
+
+    const result = await mongodb
+      .getDb()
+      .collection('categories')
+      .updateOne(
+        { _id: categoryId },
+        { $set: updatedCategory }
+      );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({
+        message: 'Category not found.'
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Category updated successfully.',
+      categoryId,
+      modifiedCount: result.modifiedCount
     });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function deleteCategory(req, res, next) {
+  try {
+    const categoryId = new ObjectId(req.params.id);
+
+    const category = await mongodb
+      .getDb()
+      .collection('categories')
+      .findOne({ _id: categoryId });
+
+    if (!category) {
+      return res.status(404).json({
+        message: 'Category not found.'
+      });
+    }
+
+    // Prevent deleting a category that is still being used.
+    const linkedExpense = await mongodb
+      .getDb()
+      .collection('expenses')
+      .findOne({ categoryId });
+
+    if (linkedExpense) {
+      return res.status(409).json({
+        message:
+          'This category cannot be deleted because one or more expenses are using it. Delete or update those expenses first.'
+      });
+    }
+
+    const result = await mongodb
+      .getDb()
+      .collection('categories')
+      .deleteOne({ _id: categoryId });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        message: 'Category not found.'
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Category deleted successfully.',
+      categoryId
+    });
+  } catch (error) {
+    return next(error);
   }
 }
 
 module.exports = {
   getAllCategories,
   getCategoryById,
-  createCategory
+  createCategory,
+  updateCategory,
+  deleteCategory
 };

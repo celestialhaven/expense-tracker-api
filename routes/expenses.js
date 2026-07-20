@@ -1,16 +1,19 @@
 const express = require('express');
 const expenseController = require('../controllers/expenses');
+const validateRequest = require('../middleware/validate');
+
+const {
+  expenseIdRules,
+  expenseBodyRules
+} = require('../validators/expenses');
 
 const router = express.Router();
 
-/**
- * Get all expenses.
- */
-router.get('/', (req, res) => {
+router.get('/', (req, res, next) => {
   /*
     #swagger.tags = ['Expenses']
     #swagger.summary = 'Get all expenses'
-    #swagger.description = 'Returns every expense stored in the database.'
+    #swagger.description = 'Returns all expense records.'
 
     #swagger.responses[200] = {
       description: 'Expenses retrieved successfully.',
@@ -23,90 +26,177 @@ router.get('/', (req, res) => {
     }
   */
 
-  return expenseController.getAllExpenses(req, res);
+  return expenseController.getAllExpenses(req, res, next);
 });
 
-/**
- * Get one expense by ID.
- */
-router.get('/:id', (req, res) => {
-  /*
-    #swagger.tags = ['Expenses']
-    #swagger.summary = 'Get an expense by ID'
-    #swagger.description = 'Returns one expense using its MongoDB ID.'
+router.get(
+  '/:id',
+  ...expenseIdRules(),
+  validateRequest,
+  (req, res, next) => {
+    /*
+      #swagger.tags = ['Expenses']
+      #swagger.summary = 'Get an expense by ID'
 
-    #swagger.parameters['id'] = {
-      in: 'path',
-      description: 'MongoDB ID of the expense.',
-      required: true,
-      type: 'string'
-    }
-
-    #swagger.responses[200] = {
-      description: 'Expense retrieved successfully.',
-      schema: { $ref: '#/definitions/Expense' }
-    }
-
-    #swagger.responses[400] = {
-      description: 'Invalid expense ID.',
-      schema: { $ref: '#/definitions/Error' }
-    }
-
-    #swagger.responses[404] = {
-      description: 'Expense not found.',
-      schema: { $ref: '#/definitions/Error' }
-    }
-
-    #swagger.responses[500] = {
-      description: 'Server error.',
-      schema: { $ref: '#/definitions/Error' }
-    }
-  */
-
-  return expenseController.getExpenseById(req, res);
-});
-
-/**
- * Create an expense.
- */
-router.post('/', (req, res) => {
-  /*
-    #swagger.tags = ['Expenses']
-    #swagger.summary = 'Create an expense'
-    #swagger.description = 'Creates and saves a new expense record.'
-
-    #swagger.parameters['body'] = {
-      in: 'body',
-      description: 'Expense information.',
-      required: true,
-      schema: { $ref: '#/definitions/ExpenseInput' }
-    }
-
-    #swagger.responses[201] = {
-      description: 'Expense created successfully.',
-      schema: {
-        message: 'Expense created successfully.',
-        expenseId: '669f98765432109876543210'
+      #swagger.parameters['id'] = {
+        in: 'path',
+        description: 'MongoDB ObjectId of the expense.',
+        required: true,
+        type: 'string'
       }
-    }
 
-    #swagger.responses[400] = {
-      description: 'Invalid or missing expense information.',
-      schema: { $ref: '#/definitions/Error' }
-    }
+      #swagger.responses[200] = {
+        description: 'Expense retrieved successfully.',
+        schema: { $ref: '#/definitions/Expense' }
+      }
 
-    #swagger.responses[404] = {
-      description: 'The selected category does not exist.',
-      schema: { $ref: '#/definitions/Error' }
-    }
+      #swagger.responses[400] = {
+        description: 'Invalid expense ID.',
+        schema: { $ref: '#/definitions/ValidationError' }
+      }
 
-    #swagger.responses[500] = {
-      description: 'Server error.',
-      schema: { $ref: '#/definitions/Error' }
-    }
-  */
+      #swagger.responses[404] = {
+        description: 'Expense not found.',
+        schema: { $ref: '#/definitions/Error' }
+      }
 
-  return expenseController.createExpense(req, res);
-});
+      #swagger.responses[500] = {
+        description: 'Server error.',
+        schema: { $ref: '#/definitions/Error' }
+      }
+    */
+
+    return expenseController.getExpenseById(req, res, next);
+  }
+);
+
+router.post(
+  '/',
+  ...expenseBodyRules(),
+  validateRequest,
+  (req, res, next) => {
+    /*
+      #swagger.tags = ['Expenses']
+      #swagger.summary = 'Create an expense'
+
+      #swagger.parameters['body'] = {
+        in: 'body',
+        description: 'Expense information.',
+        required: true,
+        schema: { $ref: '#/definitions/ExpenseInput' }
+      }
+
+      #swagger.responses[201] = {
+        description: 'Expense created successfully.'
+      }
+
+      #swagger.responses[400] = {
+        description: 'Expense validation failed.',
+        schema: { $ref: '#/definitions/ValidationError' }
+      }
+
+      #swagger.responses[404] = {
+        description: 'Selected category does not exist.',
+        schema: { $ref: '#/definitions/Error' }
+      }
+
+      #swagger.responses[500] = {
+        description: 'Server error.',
+        schema: { $ref: '#/definitions/Error' }
+      }
+    */
+
+    return expenseController.createExpense(req, res, next);
+  }
+);
+
+router.put(
+  '/:id',
+  ...expenseIdRules(),
+  ...expenseBodyRules(),
+  validateRequest,
+  (req, res, next) => {
+    /*
+      #swagger.tags = ['Expenses']
+      #swagger.summary = 'Update an expense'
+      #swagger.description = 'Updates an existing expense using its MongoDB ID.'
+
+      #swagger.parameters['id'] = {
+        in: 'path',
+        description: 'MongoDB ObjectId of the expense.',
+        required: true,
+        type: 'string'
+      }
+
+      #swagger.parameters['body'] = {
+        in: 'body',
+        description: 'Updated expense information.',
+        required: true,
+        schema: { $ref: '#/definitions/ExpenseInput' }
+      }
+
+      #swagger.responses[200] = {
+        description: 'Expense updated successfully.'
+      }
+
+      #swagger.responses[400] = {
+        description: 'Expense validation failed.',
+        schema: { $ref: '#/definitions/ValidationError' }
+      }
+
+      #swagger.responses[404] = {
+        description: 'Expense or selected category not found.',
+        schema: { $ref: '#/definitions/Error' }
+      }
+
+      #swagger.responses[500] = {
+        description: 'Server error.',
+        schema: { $ref: '#/definitions/Error' }
+      }
+    */
+
+    return expenseController.updateExpense(req, res, next);
+  }
+);
+
+router.delete(
+  '/:id',
+  ...expenseIdRules(),
+  validateRequest,
+  (req, res, next) => {
+    /*
+      #swagger.tags = ['Expenses']
+      #swagger.summary = 'Delete an expense'
+
+      #swagger.parameters['id'] = {
+        in: 'path',
+        description: 'MongoDB ObjectId of the expense.',
+        required: true,
+        type: 'string'
+      }
+
+      #swagger.responses[200] = {
+        description: 'Expense deleted successfully.'
+      }
+
+      #swagger.responses[400] = {
+        description: 'Invalid expense ID.',
+        schema: { $ref: '#/definitions/ValidationError' }
+      }
+
+      #swagger.responses[404] = {
+        description: 'Expense not found.',
+        schema: { $ref: '#/definitions/Error' }
+      }
+
+      #swagger.responses[500] = {
+        description: 'Server error.',
+        schema: { $ref: '#/definitions/Error' }
+      }
+    */
+
+    return expenseController.deleteExpense(req, res, next);
+  }
+);
 
 module.exports = router;

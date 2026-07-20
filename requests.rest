@@ -1,26 +1,80 @@
-### Create a category
-POST http://localhost:3000/categories
+@baseUrl = http://localhost:3000
+
+# Replace these with real MongoDB IDs.
+@categoryId = PASTE_CATEGORY_ID_HERE
+@expenseId = PASTE_EXPENSE_ID_HERE
+
+### Get all categories
+GET {{baseUrl}}/categories
+
+### Create category
+POST {{baseUrl}}/categories
 Content-Type: application/json
 
 {
-  "name": "Utilities",
-  "description": "Electricity, water, internet, and phone bills",
-  "monthlyBudget": 5000,
+  "name": "Transportation",
+  "description": "Fuel, fares, parking, and vehicle expenses",
+  "monthlyBudget": 6000,
   "isActive": true
 }
 
-###
-POST http://localhost:3000/expenses
+### Update category
+PUT {{baseUrl}}/categories/{{categoryId}}
 Content-Type: application/json
 
 {
-  "title": "Electricity Bill",
-  "amount": 2800,
-  "categoryId": "6a5e327ff7115c2f876e6ed9",
-  "paymentMethod": "GCash",
+  "name": "Transportation and Travel",
+  "description": "Fuel, fares, parking, vehicle, and travel expenses",
+  "monthlyBudget": 7500,
+  "isActive": true
+}
+
+### Create expense
+POST {{baseUrl}}/expenses
+Content-Type: application/json
+
+{
+  "title": "Vehicle Fuel",
+  "amount": 2500,
+  "categoryId": "{{categoryId}}",
+  "paymentMethod": "Cash",
   "expenseDate": "2026-07-20",
-  "description": "Monthly electricity payment",
-  "merchant": "Electric Cooperative",
-  "isRecurring": true,
+  "description": "Full tank of diesel",
+  "merchant": "Shell",
+  "isRecurring": false,
   "status": "paid"
+}
+
+### Update expense
+PUT {{baseUrl}}/expenses/{{expenseId}}
+Content-Type: application/json
+
+{
+  "title": "Vehicle Diesel Fuel",
+  "amount": 2700,
+  "categoryId": "{{categoryId}}",
+  "paymentMethod": "Cash",
+  "expenseDate": "2026-07-20",
+  "description": "Full tank of diesel and additives",
+  "merchant": "Shell",
+  "isRecurring": false,
+  "status": "paid"
+}
+
+### Delete expense
+DELETE {{baseUrl}}/expenses/{{expenseId}}
+
+### Delete category
+DELETE {{baseUrl}}/categories/{{categoryId}}
+
+### Test validation error
+POST {{baseUrl}}/expenses
+Content-Type: application/json
+
+{
+  "title": "",
+  "amount": -100,
+  "categoryId": "invalid-id",
+  "expenseDate": "not-a-date",
+  "status": "unknown"
 }

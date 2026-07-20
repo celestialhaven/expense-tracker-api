@@ -4,10 +4,10 @@
   "description": "A REST API for managing personal expenses and expense categories.",
   "main": "server.js",
   "scripts": {
-  "start": "node server.js",
-  "dev": "nodemon server.js",
-  "swagger": "node swagger.js"
-},
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "swagger": "node swagger.js"
+  },
   "keywords": [
     "expense-tracker",
     "rest-api",
@@ -19,7 +19,7 @@
   "dependencies": {
     "dotenv": "^16.0.0",
     "express": "^5.0.0",
-    "express-validator": "^7.0.0",
+    "express-validator": "^7.3.2",
     "mongodb": "^6.0.0",
     "swagger-autogen": "^2.0.0",
     "swagger-ui-express": "^5.0.0"

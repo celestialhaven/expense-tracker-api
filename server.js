@@ -3,23 +3,26 @@ require('dotenv').config();
 const express = require('express');
 const mongodb = require('./data/database');
 
+const {
+  notFoundHandler,
+  errorHandler
+} = require('./middleware/errorHandler');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Allow the server to receive JSON request bodies.
+// Parse JSON request bodies.
 app.use(express.json());
 
-// Load all API routes.
+// Load API routes.
 app.use('/', require('./routes'));
 
-// Handle routes that do not exist.
-app.use((req, res) => {
-  res.status(404).json({
-    message: 'Route not found.'
-  });
-});
+// Handle unknown routes.
+app.use(notFoundHandler);
 
-// Connect to MongoDB before starting the server.
+// Handle controller, database, and JSON errors.
+app.use(errorHandler);
+
 mongodb
   .initDb()
   .then(() => {

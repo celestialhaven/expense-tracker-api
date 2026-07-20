@@ -23,6 +23,23 @@ router.get('/', (req, res) => {
   });
 });
 
+router.get('/health', (req, res) => {
+  /*
+    #swagger.tags = ['General']
+    #swagger.summary = 'API health check'
+    #swagger.description = 'Returns a lightweight deployment health status.'
+
+    #swagger.responses[200] = {
+      description: 'API is running.'
+    }
+  */
+
+  return res.status(200).json({
+    status: 'ok',
+    service: 'expense-tracker-api'
+  });
+});
+
 router.use('/api-docs', require('./swagger'));
 router.use('/expenses', require('./expenses'));
 router.use('/categories', require('./categories'));

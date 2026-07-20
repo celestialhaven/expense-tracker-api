@@ -9,7 +9,7 @@ async function initDb() {
   }
 
   if (!process.env.MONGODB_URI) {
-    throw new Error('MONGODB_URI is missing from the .env file.');
+    throw new Error('MONGODB_URI is missing from the environment.');
   }
 
   client = new MongoClient(process.env.MONGODB_URI);

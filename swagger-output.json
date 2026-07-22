@@ -1,0 +1,673 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Expense Tracker API",
+    "description": "A REST API for creating, retrieving, updating, deleting, and categorizing personal expense records."
+  },
+  "host": "expense-tracker-api-hxbu.onrender.com",
+  "basePath": "/",
+  "tags": [
+    {
+      "name": "General",
+      "description": "General API information."
+    },
+    {
+      "name": "Categories",
+      "description": "Create and manage expense categories."
+    },
+    {
+      "name": "Expenses",
+      "description": "Create and manage expense records."
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "General"
+        ],
+        "summary": "Expense Tracker API home",
+        "description": "Returns the available API resources.",
+        "responses": {
+          "200": {
+            "description": "API information retrieved successfully."
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "General"
+        ],
+        "summary": "API health check",
+        "description": "Returns a lightweight deployment health status.",
+        "responses": {
+          "200": {
+            "description": "API is running."
+          }
+        }
+      }
+    },
+    "/api-docs/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/expenses/": {
+      "get": {
+        "tags": [
+          "Expenses"
+        ],
+        "summary": "Get all expenses",
+        "description": "Returns all expense records.",
+        "responses": {
+          "200": {
+            "description": "Expenses retrieved successfully.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Expense"
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Expenses"
+        ],
+        "summary": "Create an expense",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Expense information.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ExpenseInput"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Expense created successfully."
+          },
+          "400": {
+            "description": "Expense validation failed.",
+            "schema": {
+              "$ref": "#/definitions/ValidationError"
+            }
+          },
+          "404": {
+            "description": "Selected category does not exist.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/expenses/{id}": {
+      "get": {
+        "tags": [
+          "Expenses"
+        ],
+        "summary": "Get an expense by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "MongoDB ObjectId of the expense."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Expense retrieved successfully.",
+            "schema": {
+              "$ref": "#/definitions/Expense"
+            }
+          },
+          "400": {
+            "description": "Invalid expense ID.",
+            "schema": {
+              "$ref": "#/definitions/ValidationError"
+            }
+          },
+          "404": {
+            "description": "Expense not found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Expenses"
+        ],
+        "summary": "Update an expense",
+        "description": "Updates an existing expense using its MongoDB ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "MongoDB ObjectId of the expense."
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Updated expense information.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ExpenseInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Expense updated successfully."
+          },
+          "400": {
+            "description": "Expense validation failed.",
+            "schema": {
+              "$ref": "#/definitions/ValidationError"
+            }
+          },
+          "404": {
+            "description": "Expense or selected category not found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Expenses"
+        ],
+        "summary": "Delete an expense",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "MongoDB ObjectId of the expense."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Expense deleted successfully."
+          },
+          "400": {
+            "description": "Invalid expense ID.",
+            "schema": {
+              "$ref": "#/definitions/ValidationError"
+            }
+          },
+          "404": {
+            "description": "Expense not found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/categories/": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Get all categories",
+        "description": "Returns all expense categories.",
+        "responses": {
+          "200": {
+            "description": "Categories retrieved successfully.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Category"
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Create a category",
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Category information.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CategoryInput"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Category created successfully."
+          },
+          "400": {
+            "description": "Category validation failed.",
+            "schema": {
+              "$ref": "#/definitions/ValidationError"
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/categories/{id}": {
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Get a category by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "MongoDB ObjectId of the category."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category retrieved successfully.",
+            "schema": {
+              "$ref": "#/definitions/Category"
+            }
+          },
+          "400": {
+            "description": "Invalid category ID.",
+            "schema": {
+              "$ref": "#/definitions/ValidationError"
+            }
+          },
+          "404": {
+            "description": "Category not found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Update a category",
+        "description": "Updates an existing category using its MongoDB ID.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "MongoDB ObjectId of the category."
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Updated category information.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CategoryInput"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category updated successfully."
+          },
+          "400": {
+            "description": "Category validation failed.",
+            "schema": {
+              "$ref": "#/definitions/ValidationError"
+            }
+          },
+          "404": {
+            "description": "Category not found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Categories"
+        ],
+        "summary": "Delete a category",
+        "description": "Deletes a category that is not connected to an expense.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "MongoDB ObjectId of the category."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Category deleted successfully."
+          },
+          "400": {
+            "description": "Invalid category ID.",
+            "schema": {
+              "$ref": "#/definitions/ValidationError"
+            }
+          },
+          "404": {
+            "description": "Category not found.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "409": {
+            "description": "Category is still being used by an expense.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Server error.",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "CategoryInput": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Utilities"
+        },
+        "description": {
+          "type": "string",
+          "example": "Electricity, water, internet, and phone bills"
+        },
+        "monthlyBudget": {
+          "type": "number",
+          "example": 5000
+        },
+        "isActive": {
+          "type": "boolean",
+          "example": true
+        }
+      },
+      "required": [
+        "name",
+        "monthlyBudget"
+      ]
+    },
+    "Category": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "669f12345678901234567890"
+        },
+        "name": {
+          "type": "string",
+          "example": "Utilities"
+        },
+        "description": {
+          "type": "string",
+          "example": "Electricity, water, internet, and phone bills"
+        },
+        "monthlyBudget": {
+          "type": "number",
+          "example": 5000
+        },
+        "isActive": {
+          "type": "boolean",
+          "example": true
+        },
+        "createdAt": {
+          "type": "string",
+          "example": "2026-07-20T10:00:00.000Z"
+        },
+        "updatedAt": {
+          "type": "string",
+          "example": "2026-07-20T10:00:00.000Z"
+        }
+      }
+    },
+    "ExpenseInput": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "example": "Electricity Bill"
+        },
+        "amount": {
+          "type": "number",
+          "example": 2800
+        },
+        "categoryId": {
+          "type": "string",
+          "example": "669f12345678901234567890"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "example": "GCash"
+        },
+        "expenseDate": {
+          "type": "string",
+          "example": "2026-07-20"
+        },
+        "description": {
+          "type": "string",
+          "example": "Monthly electricity payment"
+        },
+        "merchant": {
+          "type": "string",
+          "example": "Electric Cooperative"
+        },
+        "isRecurring": {
+          "type": "boolean",
+          "example": true
+        },
+        "status": {
+          "type": "string",
+          "example": "paid"
+        }
+      },
+      "required": [
+        "title",
+        "amount",
+        "categoryId",
+        "expenseDate"
+      ]
+    },
+    "Expense": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string",
+          "example": "669f98765432109876543210"
+        },
+        "title": {
+          "type": "string",
+          "example": "Electricity Bill"
+        },
+        "amount": {
+          "type": "number",
+          "example": 2800
+        },
+        "categoryId": {
+          "type": "string",
+          "example": "669f12345678901234567890"
+        },
+        "paymentMethod": {
+          "type": "string",
+          "example": "GCash"
+        },
+        "expenseDate": {
+          "type": "string",
+          "example": "2026-07-20T00:00:00.000Z"
+        },
+        "description": {
+          "type": "string",
+          "example": "Monthly electricity payment"
+        },
+        "merchant": {
+          "type": "string",
+          "example": "Electric Cooperative"
+        },
+        "isRecurring": {
+          "type": "boolean",
+          "example": true
+        },
+        "status": {
+          "type": "string",
+          "example": "paid"
+        },
+        "createdAt": {
+          "type": "string",
+          "example": "2026-07-20T10:00:00.000Z"
+        },
+        "updatedAt": {
+          "type": "string",
+          "example": "2026-07-20T10:00:00.000Z"
+        }
+      }
+    },
+    "ValidationError": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "Validation failed."
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string",
+                "example": "amount"
+              },
+              "message": {
+                "type": "string",
+                "example": "Amount must be greater than 0."
+              },
+              "location": {
+                "type": "string",
+                "example": "body"
+              }
+            }
+          }
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "example": "The requested resource was not found."
+        }
+      }
+    }
+  }
+}
